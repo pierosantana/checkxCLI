@@ -22,7 +22,7 @@ public class InteractiveShell {
     private boolean running;
 
     private static final String[] ICON_OPTIONS = {
-            "⭐️", "📚", "💻", "🏋", "🥗", "🏠"
+            "⭐️", "📚", "💻", "💪", "🥗", "🏠"
     };
 
     public InteractiveShell() {
@@ -538,41 +538,48 @@ public class InteractiveShell {
         ConsoleColors.printSeparator();
         System.out.println(ConsoleColors.title("  CHECKX COMMANDS"));
         ConsoleColors.printLine();
-        
+
         System.out.println("  " + ConsoleColors.bold("Viewing:"));
-        System.out.println("    " + ConsoleColors.info("daily") + ", " + ConsoleColors.info("today") + 
-                         "          Show today's habits");
-        System.out.println("    " + ConsoleColors.info("list") + ", " + ConsoleColors.info("habits") + ", " + 
+        System.out.println("    " + ConsoleColors.info("daily") + ", " + ConsoleColors.info("today") +
+                         "          Show today's habits & weekly calendar");
+        System.out.println("    " + ConsoleColors.info("list") + ", " + ConsoleColors.info("habits") + ", " +
                          ConsoleColors.info("all") + "     List all habits");
         System.out.println("    " + ConsoleColors.info("stats") + "                 Show statistics");
         System.out.println("    " + ConsoleColors.info("stats daily") + "           Today's stats");
         System.out.println("    " + ConsoleColors.info("stats all") + "             All-time stats");
-        
+
         System.out.println();
         System.out.println("  " + ConsoleColors.bold("Managing:"));
         System.out.println("    " + ConsoleColors.info("add [name]") + "            Add new habit");
+        System.out.println("    " + ConsoleColors.info("add [name], [comment]") + " Add habit with comment");
         System.out.println("    " + ConsoleColors.info("done [name]") + "           Complete a habit");
-        System.out.println("    " + ConsoleColors.info("undone [name]") + "         Revert a completion");
-        System.out.println("    " + ConsoleColors.info("edit [name]") + "           Edit name or icon");
+        System.out.println("    " + ConsoleColors.info("undone [name]") + "         Revert today's completion");
+        System.out.println("    " + ConsoleColors.info("edit [name]") + "           Edit name, icon or comment");
         System.out.println("    " + ConsoleColors.info("delete [name]") + "         Delete a habit");
-        
+
         System.out.println();
         System.out.println("  " + ConsoleColors.bold("Other:"));
-        System.out.println("    " + ConsoleColors.info("help") + ", " + ConsoleColors.info("?") + 
+        System.out.println("    " + ConsoleColors.info("help") + ", " + ConsoleColors.info("?") +
                          "               Show this help");
-        System.out.println("    " + ConsoleColors.info("clear") + ", " + ConsoleColors.info("cls") + 
+        System.out.println("    " + ConsoleColors.info("clear") + ", " + ConsoleColors.info("cls") +
                          "            Clear screen");
-        System.out.println("    " + ConsoleColors.info("exit") + ", " + ConsoleColors.info("quit") + ", " + 
+        System.out.println("    " + ConsoleColors.info("exit") + ", " + ConsoleColors.info("quit") + ", " +
                          ConsoleColors.info("q") + "         Exit CheckX");
-        
+
         ConsoleColors.printSeparator();
-        
+
+        System.out.println();
+        System.out.println(ConsoleColors.muted("  Tips:"));
+        System.out.println(ConsoleColors.muted("    - Partial names work: 'done ex' finds 'Exercise'"));
+        System.out.println(ConsoleColors.muted("    - Comments use comma: add read, 30 min before bed"));
         System.out.println();
         System.out.println(ConsoleColors.muted("  Examples:"));
         System.out.println(ConsoleColors.muted("    $ add exercise"));
+        System.out.println(ConsoleColors.muted("    $ add code, spring security 30min"));
         System.out.println(ConsoleColors.muted("    $ done exercise"));
+        System.out.println(ConsoleColors.muted("    $ undone exercise"));
+        System.out.println(ConsoleColors.muted("    $ edit ex"));
         System.out.println(ConsoleColors.muted("    $ daily"));
-        System.out.println(ConsoleColors.muted("    $ stats all"));
         System.out.println();
     }
 

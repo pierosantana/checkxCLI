@@ -15,86 +15,36 @@ Terminal-based habit tracker built with pure Java. No frameworks, no bloat - jus
  ██████ ██   ██ ███████  ██████ ██   ██ ██   ██
 ```
 
-## ✨ Features
+## Features
 
-- 🐚 **Interactive shell** - Unix-style command interface (like bash/zsh)
-- 🎯 **Simple habit tracking** - Add, complete, and track your daily habits
-- 🔥 **Streak system** - Build momentum with daily streaks
-- 📊 **Statistics** - View your progress and completion rates
-- 🎨 **Beautiful CLI** - Colorful terminal interface with pure ANSI codes
-- 💾 **Local storage** - JSON-based persistence in `~/.checkx/`
-- ⚡ **Fast & lightweight** - Pure Java, no heavy frameworks
-- 🔧 **Dual mode** - Interactive shell OR quick CLI commands
-- 💬 **Command aliases** - Multiple ways to run the same command
+- Interactive shell with weekly calendar and progress bar
+- Streaks, statistics, habit comments and icon selector
+- Edit, undo, delete and partial name search
+- Local JSON storage, pure Java, no heavy frameworks
 
-## 🚀 Quick Start
+## Quick Start
 
-### Prerequisites
+Requires **Java 17+** and **Maven 3.6+**.
 
-- Java 17 or higher
-- Maven 3.6+
-
-### Installation
-
-1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/checkx.git
-cd checkx
-```
-
-2. **Build the project**
-```bash
+git clone https://github.com/pierosantana/checkxCLI.git
+cd checkxCLI
 mvn clean package
+java -jar target/checkx.jar
 ```
 
-This creates `target/checkx.jar`
+Optional: add an alias to your `~/.zshrc` or `~/.bashrc`:
 
-3. **Create an alias** (optional but recommended)
-
-Add to your `~/.bashrc` or `~/.zshrc`:
 ```bash
-alias checkx='java -jar /path/to/checkx/target/checkx.jar'
+alias checkx='java -jar /path/to/checkxCLI/target/checkx.jar'
 ```
 
-Or create a shorter alias:
-```bash
-alias cx='java -jar /path/to/checkx/target/checkx.jar'
-```
+## Usage
 
-Reload your shell:
-```bash
-source ~/.bashrc  # or source ~/.zshrc
-```
-
-### Alternative: Make it executable
+Run without arguments for interactive shell, or pass commands directly:
 
 ```bash
-# Copy JAR to local bin
-mkdir -p ~/.local/bin
-cp target/checkx.jar ~/.local/bin/
-
-# Create wrapper script
-cat > ~/.local/bin/checkx << 'EOF'
-#!/bin/bash
-java -jar ~/.local/bin/checkx.jar "$@"
-EOF
-
-chmod +x ~/.local/bin/checkx
-
-# Add to PATH if needed
-export PATH="$HOME/.local/bin:$PATH"
-```
-
-## 📖 Usage
-
-CheckX supports **two modes**:
-
-### 🐚 Interactive Shell (Recommended)
-
-Simply run without arguments to enter interactive shell:
-
-```bash
-checkx
+checkx              # interactive shell
 ```
 
 Or:
@@ -103,7 +53,7 @@ java -jar target/checkx.jar
 ```
 
 This opens a Unix-style command shell:
-```
+```shell
  ██████ ██   ██ ███████  ██████ ██   ██ ██   ██
 ██      ██   ██ ██      ██      ██  ██   ██ ██ 
 ██      ███████ █████   ██      █████     ███  
@@ -121,46 +71,26 @@ $ exit
 ```
 
 **Available commands:**
-- `daily`, `today` - Show today's habits
-- `done [name]` - Complete a habit
-- `add [name]` - Add new habit
-- `stats` - Show statistics
-- `stats daily` - Today's statistics
-- `stats all` - All-time statistics
-- `list`, `habits` - List all habits
-- `delete [name]` - Delete a habit
-- `help` - Show all commands
-- `clear` - Clear screen
-- `exit`, `quit` - Exit
 
-### ⚡ CLI Mode (Quick Commands)
+| Command | Aliases | Description |
+|---|---|---|
+| `daily` | `today` | Show today's habits & weekly calendar |
+| `list` | `habits`, `all` | List all habits |
+| `stats` | `statistics` | Show statistics |
+| `stats daily` | | Today's stats |
+| `stats all` | | All-time stats |
+| `add [name]` | `new` | Add new habit with icon selector |
+| `add [name], [comment]` | | Add habit with a comment |
+| `done [name]` | `complete` | Complete a habit |
+| `undone [name]` | `undo` | Revert today's completion |
+| `edit [name]` | `rename` | Edit name, icon or comment |
+| `delete [name]` | `remove`, `rm` | Delete a habit |
+| `help` | `?` | Show all commands |
+| `clear` | `cls` | Clear screen |
+| `exit` | `quit`, `q` | Exit CheckX |
 
-Use individual commands for scripting or quick actions:
+> Partial names work: `done ex` finds `Exercise`
 
-```bash
-checkx daily          # View today's habits
-checkx done exercise  # Complete a habit
-checkx add "Read"     # Add a habit
-checkx stats          # View statistics
-checkx list           # List all habits
-```
-
-## 🎨 Terminal Recommendations
-
-For the best experience, use a modern terminal with Unicode and emoji support:
-
-**Recommended fonts:**
-- JetBrains Mono
-- Fira Code
-- Cascadia Code
-- SF Mono
-
-**Tested terminals:**
-- ✅ iTerm2 (macOS)
-- ✅ Windows Terminal
-- ✅ Alacritty
-- ✅ Kitty
-- ⚠️ Basic terminals may show broken characters
 
 ## 🏗️ Architecture
 
@@ -198,43 +128,23 @@ checkx/
 - **Gson** - JSON serialization
 - **Pure ANSI codes** - No external color libraries (100% Java)
 
-## 📦 Building
+## Roadmap
 
-```bash
-# Compile
-mvn compile
-
-# Run tests (when added)
-mvn test
-
-# Package as JAR
-mvn package
-
-# Clean build
-mvn clean package
-```
-
-## 🔮 Roadmap
-
-### Version 1.1
-- [ ] Edit habit name/icon
-- [ ] Delete habits
-- [ ] Custom habit icons
+### Version 1.1 (Done)
+- [x] Edit habit name/icon/comment
+- [x] Delete habits
+- [x] Custom habit icons (icon selector)
+- [x] Undo completion
+- [x] Partial name search
+- [x] Weekly calendar view
+- [x] Habit comments
 
 ### Version 2.0
 - [ ] Pomodoro timer integration
 - [ ] Weekly/monthly reports
 - [ ] Export data (CSV/JSON)
 
-### Version 3.0
-- [ ] Multiple routines (Morning/Evening)
-- [ ] Habit categories
-- [ ] ASCII graphs for trends
 
-### Future
-- [ ] GraalVM native binary
-- [ ] Cloud sync (optional)
-- [ ] Multiple themes
 
 ## 🤝 Contributing
 
@@ -255,4 +165,3 @@ MIT License - feel free to use this project however you want!
 
 ---
 
-**Made with Java and passion** 🚀

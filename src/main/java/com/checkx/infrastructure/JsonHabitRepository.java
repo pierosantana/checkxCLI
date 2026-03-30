@@ -31,6 +31,7 @@ public class JsonHabitRepository implements HabitRepository {
 
     private final Gson gson;
     private List<Habit> habits;
+    private LocalDate lastCheckedDate;
 
     public JsonHabitRepository() {
         this.gson = new GsonBuilder()
@@ -38,6 +39,7 @@ public class JsonHabitRepository implements HabitRepository {
                 .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
                 .create();
         this.habits = new ArrayList<>();
+        this.lastCheckedDate = LocalDate.now();
         ensureDataDirectoryExists();
         loadHabits();
     }
@@ -95,9 +97,11 @@ public class JsonHabitRepository implements HabitRepository {
     public void save(Habit habit) {
         Optional<Habit> existing = findById(habit.getId());
         if (existing.isPresent()) {
-            habits.remove(existing.get());
+            int index = habits.indexOf(existing.get());
+            habits.set(index, habit);
+        } else {
+            habits.add(habit);
         }
-        habits.add(habit);
         saveHabits();
     }
 
@@ -125,7 +129,16 @@ public class JsonHabitRepository implements HabitRepository {
 
     @Override
     public List<Habit> findAll() {
+        checkDayChange();
         return new ArrayList<>(habits);
+    }
+
+    private void checkDayChange() {
+        LocalDate today = LocalDate.now();
+        if (!today.equals(lastCheckedDate)) {
+            lastCheckedDate = today;
+            resetDailyStatusIfNeeded();
+        }
     }
 
     @Override
