@@ -7,6 +7,10 @@ import com.checkx.ui.ConsoleColors;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.Scanner;
+
 /**
  * Reverts a habit's completion for today.
  */
@@ -33,12 +37,8 @@ public class UndoneCommand implements Runnable {
         }
 
         String name = String.join(" ", habitName);
-        var habitOpt = repository.findByName(name);
-
-        if (habitOpt.isEmpty()) {
-            System.out.println(ConsoleColors.error("Habit not found: " + name));
-            return;
-        }
+        var habitOpt = resolveHabit(name);
+        if (habitOpt.isEmpty()) return;
 
         Habit habit = habitOpt.get();
 
@@ -53,5 +53,30 @@ public class UndoneCommand implements Runnable {
 
         System.out.println(ConsoleColors.success("↩ " + habit.getIcon() + " " + habit.getName() + " marked as not completed"));
         System.out.println(ConsoleColors.muted("Streak: " + oldStreak + "d → " + habit.getStreak() + "d"));
+    }
+
+    private Optional<Habit> resolveHabit(String query) {
+        var exact = repository.findByName(query);
+        if (exact.isPresent()) return exact;
+
+        List<Habit> matches = repository.searchByName(query);
+        if (matches.isEmpty()) {
+            System.out.println(ConsoleColors.error("Habit not found: " + query));
+            return Optional.empty();
+        }
+        if (matches.size() == 1) return Optional.of(matches.get(0));
+
+        System.out.println(ConsoleColors.warning("Multiple habits match '" + query + "':"));
+        for (int i = 0; i < matches.size(); i++) {
+            Habit h = matches.get(i);
+            System.out.println("  " + (i + 1) + ") " + h.getIcon() + " " + h.getName());
+        }
+        System.out.print("Choose (1-" + matches.size() + "): ");
+        Scanner sc = new Scanner(System.in);
+        try {
+            int choice = Integer.parseInt(sc.nextLine().trim());
+            if (choice >= 1 && choice <= matches.size()) return Optional.of(matches.get(choice - 1));
+        } catch (NumberFormatException ignored) {}
+        return Optional.empty();
     }
 }

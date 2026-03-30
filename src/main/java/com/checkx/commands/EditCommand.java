@@ -7,6 +7,8 @@ import com.checkx.ui.ConsoleColors;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 /**
@@ -39,15 +41,11 @@ public class EditCommand implements Runnable {
         }
 
         String name = String.join(" ", habitName);
-        var habitOpt = repository.findByName(name);
-
-        if (habitOpt.isEmpty()) {
-            System.out.println(ConsoleColors.error("Habit not found: " + name));
-            return;
-        }
+        Scanner sc = new Scanner(System.in);
+        var habitOpt = resolveHabit(name, sc);
+        if (habitOpt.isEmpty()) return;
 
         Habit habit = habitOpt.get();
-        Scanner sc = new Scanner(System.in);
 
         System.out.println("Editing: " + habit.getIcon() + " " + habit.getName());
         System.out.println();
@@ -99,5 +97,29 @@ public class EditCommand implements Runnable {
         } else {
             System.out.println("Cancelled");
         }
+    }
+
+    private Optional<Habit> resolveHabit(String query, Scanner sc) {
+        var exact = repository.findByName(query);
+        if (exact.isPresent()) return exact;
+
+        List<Habit> matches = repository.searchByName(query);
+        if (matches.isEmpty()) {
+            System.out.println(ConsoleColors.error("Habit not found: " + query));
+            return Optional.empty();
+        }
+        if (matches.size() == 1) return Optional.of(matches.get(0));
+
+        System.out.println(ConsoleColors.warning("Multiple habits match '" + query + "':"));
+        for (int i = 0; i < matches.size(); i++) {
+            Habit h = matches.get(i);
+            System.out.println("  " + (i + 1) + ") " + h.getIcon() + " " + h.getName());
+        }
+        System.out.print("Choose (1-" + matches.size() + "): ");
+        try {
+            int choice = Integer.parseInt(sc.nextLine().trim());
+            if (choice >= 1 && choice <= matches.size()) return Optional.of(matches.get(choice - 1));
+        } catch (NumberFormatException ignored) {}
+        return Optional.empty();
     }
 }

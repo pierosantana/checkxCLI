@@ -24,6 +24,11 @@ public interface HabitRepository {
     Optional<Habit> findByName(String name);
     
     /**
+     * Searches habits by partial name match (case-insensitive).
+     */
+    List<Habit> searchByName(String query);
+
+    /**
      * Gets all habits.
      */
     List<Habit> findAll();

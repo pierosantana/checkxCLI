@@ -8,6 +8,7 @@ import com.checkx.infrastructure.JsonHabitRepository;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 /**
@@ -117,14 +118,8 @@ public class InteractiveShell {
             return;
         }
 
-        var habitOpt = repository.findByName(args);
-
-        if (habitOpt.isEmpty()) {
-            System.out.println(ConsoleColors.error("  Habit not found: " + args));
-            System.out.println(ConsoleColors.muted("  Tip: Use 'list' to see all habits"));
-            System.out.println();
-            return;
-        }
+        var habitOpt = resolveHabit(args);
+        if (habitOpt.isEmpty()) return;
 
         Habit habit = habitOpt.get();
 
@@ -192,6 +187,50 @@ public class InteractiveShell {
         }
 
         return ICON_OPTIONS[0];
+    }
+
+    private Optional<Habit> resolveHabit(String args) {
+        // Try exact match first
+        var exact = repository.findByName(args);
+        if (exact.isPresent()) {
+            return exact;
+        }
+
+        // Try partial match
+        List<Habit> matches = repository.searchByName(args);
+
+        if (matches.isEmpty()) {
+            System.out.println(ConsoleColors.error("  Habit not found: " + args));
+            System.out.println(ConsoleColors.muted("  Tip: Use 'list' to see all habits"));
+            System.out.println();
+            return Optional.empty();
+        }
+
+        if (matches.size() == 1) {
+            return Optional.of(matches.get(0));
+        }
+
+        // Multiple matches - ask user to pick
+        System.out.println(ConsoleColors.warning("  Multiple habits match '" + args + "':"));
+        for (int i = 0; i < matches.size(); i++) {
+            Habit h = matches.get(i);
+            System.out.println("    " + (i + 1) + ") " + h.getIcon() + " " + h.getName());
+        }
+        System.out.print("  " + ConsoleColors.muted("Choose (1-" + matches.size() + "): "));
+        System.out.print(ConsoleColors.command(""));
+
+        String input = scanner.nextLine().trim();
+        try {
+            int choice = Integer.parseInt(input);
+            if (choice >= 1 && choice <= matches.size()) {
+                return Optional.of(matches.get(choice - 1));
+            }
+        } catch (NumberFormatException ignored) {
+        }
+
+        System.out.println(ConsoleColors.muted("  Cancelled"));
+        System.out.println();
+        return Optional.empty();
     }
 
     private void showStats(String args) {
@@ -283,14 +322,8 @@ public class InteractiveShell {
             return;
         }
 
-        var habitOpt = repository.findByName(args);
-
-        if (habitOpt.isEmpty()) {
-            System.out.println(ConsoleColors.error("  Habit not found: " + args));
-            System.out.println(ConsoleColors.muted("  Tip: Use 'list' to see all habits"));
-            System.out.println();
-            return;
-        }
+        var habitOpt = resolveHabit(args);
+        if (habitOpt.isEmpty()) return;
 
         Habit habit = habitOpt.get();
 
@@ -339,14 +372,8 @@ public class InteractiveShell {
             return;
         }
 
-        var habitOpt = repository.findByName(args);
-
-        if (habitOpt.isEmpty()) {
-            System.out.println(ConsoleColors.error("  Habit not found: " + args));
-            System.out.println(ConsoleColors.muted("  Tip: Use 'list' to see all habits"));
-            System.out.println();
-            return;
-        }
+        var habitOpt = resolveHabit(args);
+        if (habitOpt.isEmpty()) return;
 
         Habit habit = habitOpt.get();
 
@@ -373,17 +400,12 @@ public class InteractiveShell {
             return;
         }
 
-        var habitOpt = repository.findByName(args);
-
-        if (habitOpt.isEmpty()) {
-            System.out.println(ConsoleColors.error("  Habit not found: " + args));
-            System.out.println();
-            return;
-        }
+        var habitOpt = resolveHabit(args);
+        if (habitOpt.isEmpty()) return;
 
         Habit habit = habitOpt.get();
-        
-        System.out.print(ConsoleColors.warning("  Delete " + habit.getIcon() + " " + 
+
+        System.out.print(ConsoleColors.warning("  Delete " + habit.getIcon() + " " +
                                                habit.getName() + "? (y/N) "));
         System.out.print(ConsoleColors.command(""));
         String confirm = scanner.nextLine().trim().toLowerCase();

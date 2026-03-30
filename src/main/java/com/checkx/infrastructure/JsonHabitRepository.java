@@ -25,9 +25,21 @@ import java.util.Optional;
  */
 public class JsonHabitRepository implements HabitRepository {
     
-    private static final String DATA_DIR = System.getProperty("user.home") + "/.checkx";
+    private static final String DATA_DIR = getJarDirectory() + "/.checkx";
     private static final String DATA_FILE = DATA_DIR + "/habits.json";
-    
+
+    private static String getJarDirectory() {
+        try {
+            String jarPath = JsonHabitRepository.class.getProtectionDomain()
+                    .getCodeSource().getLocation().toURI().getPath();
+            return new File(jarPath).getParentFile().getAbsolutePath();
+        } catch (Exception e) {
+            // Fallback to current working directory
+            return System.getProperty("user.dir");
+        }
+    }
+
+
     private final Gson gson;
     private List<Habit> habits;
 
@@ -112,6 +124,14 @@ public class JsonHabitRepository implements HabitRepository {
         return habits.stream()
                 .filter(h -> h.getName().equalsIgnoreCase(name))
                 .findFirst();
+    }
+
+    @Override
+    public List<Habit> searchByName(String query) {
+        String lowerQuery = query.toLowerCase();
+        return habits.stream()
+                .filter(h -> h.getName().toLowerCase().contains(lowerQuery))
+                .toList();
     }
 
     @Override
