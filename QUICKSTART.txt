@@ -1,0 +1,163 @@
+╔══════════════════════════════════════════════════════════════╗
+║              CheckX - Quick Start Guide                      ║
+╚══════════════════════════════════════════════════════════════╝
+
+🚀 INSTALLATION (3 simple steps)
+════════════════════════════════════════════════════════════════
+
+1. Navigate to the project:
+   cd checkx
+
+2. Run the install script:
+   ./install.sh
+
+3. Reload your shell:
+   source ~/.zshrc   # or source ~/.bashrc
+
+That's it! CheckX is ready to use.
+
+════════════════════════════════════════════════════════════════
+
+📖 BASIC USAGE
+════════════════════════════════════════════════════════════════
+
+🐚 INTERACTIVE SHELL (Recommended):
+  Just run:
+    checkx
+  
+  Then type commands like a Unix shell:
+    $ add exercise           # Add habit
+    $ daily                  # View today
+    $ done exercise          # Complete
+    $ stats                  # Statistics  
+    $ stats all              # All-time stats
+    $ list                   # List all
+    $ help                   # Show commands
+    $ exit                   # Quit
+
+⚡ CLI MODE (Quick Commands):
+  checkx add "Exercise"     # Add a habit
+  checkx daily              # View today
+  checkx done exercise      # Complete
+  checkx stats              # Statistics
+  checkx list               # List all
+
+════════════════════════════════════════════════════════════════
+
+🎯 TYPICAL WORKFLOW
+════════════════════════════════════════════════════════════════
+
+Morning:
+  $ checkx                    # Open shell
+  $ daily                     # See today's habits
+  
+During the day:
+  $ done exercise             # Complete as you go
+  $ done meditate
+  
+Evening:
+  $ stats                     # Check progress
+  $ exit                      # Close
+
+Or use quick CLI mode:
+  $ checkx daily              # Quick view
+  $ checkx done exercise      # Quick complete
+  $ checkx stats              # Quick stats
+
+════════════════════════════════════════════════════════════════
+
+💡 PRO TIPS
+════════════════════════════════════════════════════════════════
+
+1. Create a shorter alias:
+   alias cx='checkx'
+   
+   Then use:
+   cx daily
+   cx done exercise
+
+2. Add CheckX to your morning routine:
+   Add this to your shell startup:
+   checkx daily
+
+3. Combine with other tools:
+   checkx daily && pomodoro 25
+
+4. Data location:
+   Your habits are stored in ~/.checkx/habits.json
+   You can backup this file to keep your history
+
+════════════════════════════════════════════════════════════════
+
+🛠️ MANUAL BUILD (if install.sh doesn't work)
+════════════════════════════════════════════════════════════════
+
+1. Build with Maven:
+   mvn clean package
+
+2. The JAR is created at:
+   target/checkx.jar
+
+3. Run directly:
+   java -jar target/checkx.jar daily
+
+4. Or create alias manually:
+   Add to ~/.zshrc or ~/.bashrc:
+   alias checkx='java -jar /full/path/to/checkx/target/checkx.jar'
+
+════════════════════════════════════════════════════════════════
+
+🎨 TERMINAL SETUP
+════════════════════════════════════════════════════════════════
+
+For best visual experience:
+
+Recommended fonts:
+  • JetBrains Mono
+  • Fira Code
+  • Cascadia Code
+
+Enable Unicode and emoji support in your terminal.
+
+Tested terminals:
+  ✅ iTerm2 (macOS)
+  ✅ Windows Terminal
+  ✅ Alacritty
+  ✅ Kitty
+
+════════════════════════════════════════════════════════════════
+
+🔧 TROUBLESHOOTING
+════════════════════════════════════════════════════════════════
+
+"Java not found"
+  → Install Java 17+: https://adoptium.net/
+
+"Maven not found"
+  → Install Maven: https://maven.apache.org/install.html
+
+"Broken characters / emojis"
+  → Your terminal doesn't support Unicode
+  → Use a modern terminal (see Terminal Setup above)
+
+"Command not found: checkx"
+  → Reload your shell: source ~/.zshrc
+  → Or run directly: java -jar target/checkx.jar
+
+════════════════════════════════════════════════════════════════
+
+📚 NEXT STEPS
+════════════════════════════════════════════════════════════════
+
+1. Start tracking your habits today
+2. Build a 7-day streak
+3. Check stats to see your progress
+4. Customize the code to your needs
+5. Contribute improvements to the project
+
+════════════════════════════════════════════════════════════════
+
+Happy habit tracking! 🔥
+
+For detailed documentation, see README.md
+For technical details, see PROJECT_STRUCTURE.txt

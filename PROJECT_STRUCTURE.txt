@@ -1,0 +1,102 @@
+CheckX - Project Structure
+==========================
+
+checkx/
+│
+├── 📄 pom.xml                          # Maven configuration
+├── 📄 README.md                        # Complete documentation
+├── 📄 LICENSE                          # MIT License
+├── 📄 .gitignore                       # Git ignore rules
+├── 🔧 install.sh                       # Installation script
+│
+└── src/main/java/com/checkx/
+    │
+    ├── 🚀 CheckXApp.java               # Main entry point
+    │
+    ├── commands/                       # CLI Commands (Picocli)
+    │   ├── CheckXCommand.java          # Main command (orchestrator)
+    │   ├── DailyCommand.java           # Show today's habits
+    │   ├── DoneCommand.java            # Mark habit as completed
+    │   ├── AddCommand.java             # Add new habit
+    │   ├── StatsCommand.java           # Show statistics
+    │   └── ListCommand.java            # List all habits
+    │
+    ├── domain/                         # Core business logic
+    │   ├── Habit.java                  # Habit entity with streak logic
+    │   ├── HabitRepository.java        # Repository interface
+    │   └── Stats.java                  # Statistics calculator
+    │
+    ├── infrastructure/                 # External concerns
+    │   ├── JsonHabitRepository.java    # JSON persistence implementation
+    │   └── LocalDateAdapter.java       # Gson LocalDate adapter
+    │
+    └── ui/                             # Presentation layer
+        └── ConsoleColors.java          # JColor terminal colors
+
+════════════════════════════════════════════════════════════════
+
+Key Files Summary:
+
+DOMAIN LAYER (Pure Java, no dependencies):
+  • Habit.java           - Habit entity with streak calculation logic
+  • Stats.java           - Statistics aggregation and motivational messages
+  • HabitRepository.java - Repository pattern interface
+
+INFRASTRUCTURE LAYER:
+  • JsonHabitRepository.java - Implements persistence to ~/.checkx/habits.json
+  • LocalDateAdapter.java    - Gson adapter for Java 8 LocalDate
+
+COMMANDS LAYER (Picocli):
+  • CheckXCommand.java - Main command with subcommands
+  • DailyCommand.java  - Display today's habits with completion status
+  • DoneCommand.java   - Mark habit complete, increment streak
+  • AddCommand.java    - Create new habit with random icon
+  • StatsCommand.java  - Show aggregated statistics
+  • ListCommand.java   - List all habits with streaks
+
+UI LAYER:
+  • ConsoleColors.java - JColor utilities for colored terminal output
+
+════════════════════════════════════════════════════════════════
+
+Tech Stack:
+  ✓ Java 17
+  ✓ Maven 3.x
+  ✓ Picocli 4.7.6     (CLI framework)
+  ✓ Gson 2.11.0       (JSON serialization)
+  ✓ Pure ANSI codes   (Terminal colors - no external libs)
+
+Build:
+  mvn clean package
+  → Creates target/checkx.jar
+
+Run:
+  java -jar target/checkx.jar daily
+  
+Or use alias:
+  alias checkx='java -jar /path/to/checkx.jar'
+  checkx daily
+
+════════════════════════════════════════════════════════════════
+
+Data Storage:
+  ~/.checkx/habits.json
+
+Example JSON structure:
+[
+  {
+    "id": "uuid-here",
+    "name": "Exercise",
+    "icon": "🏃",
+    "streak": 12,
+    "completedToday": true,
+    "lastCompletedDate": "2026-03-30",
+    "createdDate": "2026-03-18"
+  }
+]
+
+════════════════════════════════════════════════════════════════
+
+Total Files: 13 Java files + 4 config files
+Total Lines: ~1200 LOC
+Architecture: Clean/Hexagonal
