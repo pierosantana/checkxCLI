@@ -39,5 +39,5 @@ buildNumber.properties
 .DS_Store
 Thumbs.db
 
-# CheckX data (optional - uncomment to not track personal data)
-# .checkx/
+# CheckX data
+.checkx/

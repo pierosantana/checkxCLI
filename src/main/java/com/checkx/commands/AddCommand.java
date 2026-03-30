@@ -38,7 +38,17 @@ public class AddCommand implements Runnable {
             return;
         }
 
-        String name = String.join(" ", habitName);
+        String raw = String.join(" ", habitName);
+        String name;
+        String comment = null;
+
+        if (raw.contains(",")) {
+            String[] parts = raw.split(",", 2);
+            name = parts[0].trim();
+            comment = parts[1].trim();
+        } else {
+            name = raw;
+        }
 
         if (repository.findByName(name).isPresent()) {
             System.out.println(ConsoleColors.error("Habit already exists: " + name));
@@ -69,10 +79,13 @@ public class AddCommand implements Runnable {
             }
         }
 
-        Habit habit = new Habit(name, icon);
+        Habit habit = new Habit(name, icon, comment);
         repository.save(habit);
 
         System.out.println(ConsoleColors.success("✓ Added new habit: " + icon + " " + name));
+        if (comment != null) {
+            System.out.println(ConsoleColors.muted("   // " + comment));
+        }
         System.out.println(ConsoleColors.muted("Complete it today with: checkx done " + name.toLowerCase()));
     }
 }

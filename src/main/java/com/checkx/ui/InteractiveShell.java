@@ -22,7 +22,7 @@ public class InteractiveShell {
     private boolean running;
 
     private static final String[] ICON_OPTIONS = {
-        "🏋 ", "📚", "💻", "🥗", "🏠", "🎯"
+            "⭐️", "📚", "💻", "🏋", "🥗", "🏠"
     };
 
     public InteractiveShell() {
@@ -35,9 +35,11 @@ public class InteractiveShell {
     public void start() {
         ConsoleColors.clearScreen();
         ConsoleColors.printBanner();
-        
+
         System.out.println(ConsoleColors.muted("  Type 'help' for available commands\n"));
-        
+
+        showDaily();
+
         while (running) {
             System.out.print(ConsoleColors.command(""));
             String input = scanner.nextLine().trim();
@@ -81,31 +83,94 @@ public class InteractiveShell {
             return;
         }
 
+        int total = habits.size();
+        LocalDate today = LocalDate.now();
+
+        // Get Monday of current week
+        LocalDate monday = today.with(java.time.DayOfWeek.MONDAY);
+
         System.out.println();
         ConsoleColors.printSeparator();
-        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy"));
-        System.out.println(ConsoleColors.title("  📅 " + today));
+
+        // Week calendar: Mon-Sun
+        StringBuilder headerLine = new StringBuilder("  ");
+        StringBuilder dataLine = new StringBuilder("  ");
+
+        for (int i = 0; i < 7; i++) {
+            LocalDate day = monday.plusDays(i);
+            String label = day.format(DateTimeFormatter.ofPattern("EEE"));
+            boolean isToday = day.equals(today);
+            boolean isFuture = day.isAfter(today);
+
+            int completed = 0;
+            if (!isFuture) {
+                if (isToday) {
+                    for (Habit h : habits) if (h.isCompletedToday()) completed++;
+                } else {
+                    for (Habit h : habits) if (wasCompletedOn(h, day)) completed++;
+                }
+            }
+
+            String num = String.valueOf(day.getDayOfMonth());
+            String marker = isToday ? "*" : " ";
+            String block;
+            if (isFuture) {
+                block = ConsoleColors.muted("█");
+            } else {
+                block = progressBlock(completed, total);
+            }
+
+            headerLine.append(String.format(" %-7s", label));
+            dataLine.append(String.format("%s%2s%s    ", marker, num, block));
+        }
+
+        System.out.println(headerLine);
+        System.out.println(dataLine);
+        ConsoleColors.printLine();
+
+        String todayFormatted = today.format(DateTimeFormatter.ofPattern("EEEE, MMMM d yyyy"));
+        System.out.println(ConsoleColors.title("  🗓️  " + todayFormatted));
         ConsoleColors.printLine();
 
         for (Habit habit : habits) {
-            String checkbox = habit.isCompletedToday() 
+            String checkbox = habit.isCompletedToday()
                 ? ConsoleColors.habitCompleted(habit.getIcon() + " " + habit.getName())
                 : ConsoleColors.habitPending(habit.getIcon() + " " + habit.getName());
-            
-            String streakInfo = habit.getStreak() > 0 
+
+            String streakInfo = habit.getStreak() > 0
                 ? ConsoleColors.streak(habit.getStreak() + "d")
                 : ConsoleColors.muted("0d");
-            
-            int padding = 50 - habit.getName().length();
+
+            int padding = 35 - habit.getName().length();
             System.out.println("  " + checkbox + " ".repeat(Math.max(1, padding)) + streakInfo);
+
+            if (habit.getComment() != null && !habit.getComment().isEmpty()) {
+                System.out.println("        " + ConsoleColors.muted("// " + habit.getComment()));
+            }
         }
+
 
         ConsoleColors.printLine();
         Stats stats = new Stats(habits);
-        System.out.println("  " + ConsoleColors.info("Progress: ") + 
-                          ConsoleColors.bold(stats.getCompletedToday() + "/" + stats.getTotalHabits()) +
-                          ConsoleColors.muted(" (" + (int)stats.getCompletionPercentage() + "%)"));
-        System.out.println("  " + ConsoleColors.muted(stats.getMotivationalMessage()));
+        int completed = stats.getCompletedToday();
+        int totalHabits = stats.getTotalHabits();
+        int pct = (int) stats.getCompletionPercentage();
+
+        int barLen = 40;
+        int filled = totalHabits > 0 ? (completed * barLen / totalHabits) : 0;
+
+        StringBuilder bar = new StringBuilder("  ");
+        for (int i = 0; i < barLen; i++) {
+            if (i < filled) {
+                bar.append(pct >= 60 ? ConsoleColors.success("█") : ConsoleColors.warning("█"));
+            } else {
+                bar.append(ConsoleColors.muted("░"));
+            }
+        }
+        bar.append("  ").append(ConsoleColors.bold(pct + "%"));
+
+        System.out.println(bar);
+        System.out.println("  " + ConsoleColors.info("Progress: ") + ConsoleColors.bold(completed + "/" + totalHabits));
         ConsoleColors.printSeparator();
         System.out.println();
     }
@@ -145,20 +210,34 @@ public class InteractiveShell {
             return;
         }
 
-        if (repository.findByName(args).isPresent()) {
-            System.out.println(ConsoleColors.error("  Habit already exists: " + args));
+        String name;
+        String comment = null;
+
+        if (args.contains(",")) {
+            String[] parts = args.split(",", 2);
+            name = parts[0].trim();
+            comment = parts[1].trim();
+        } else {
+            name = args;
+        }
+
+        if (repository.findByName(name).isPresent()) {
+            System.out.println(ConsoleColors.error("  Habit already exists: " + name));
             System.out.println();
             return;
         }
 
-        String name = args.substring(0, 1).toUpperCase() + args.substring(1);
+        name = name.substring(0, 1).toUpperCase() + name.substring(1);
         String icon = promptIconSelection();
 
-        Habit habit = new Habit(name, icon);
+        Habit habit = new Habit(name, icon, comment);
         repository.save(habit);
 
         System.out.println(ConsoleColors.success("  ✓ Added: " + icon + " " + name));
-        System.out.println(ConsoleColors.muted("  Complete it with: done " + args.toLowerCase()));
+        if (comment != null) {
+            System.out.println(ConsoleColors.muted("        // " + comment));
+        }
+        System.out.println(ConsoleColors.muted("  Complete it with: done " + name.toLowerCase()));
         System.out.println();
     }
 
@@ -166,7 +245,7 @@ public class InteractiveShell {
         System.out.println();
         System.out.print("  " + ConsoleColors.info("Choose an icon: "));
         for (int i = 0; i < ICON_OPTIONS.length; i++) {
-            System.out.print((i + 1) + ")  " + ICON_OPTIONS[i] + "  ");
+            System.out.print((i + 1) +":" + ICON_OPTIONS[i] + "  ");
         }
         System.out.println();
         System.out.print("  " + ConsoleColors.muted("Enter number (1-" + ICON_OPTIONS.length + ") or paste your own icon: "));
@@ -231,6 +310,28 @@ public class InteractiveShell {
         System.out.println(ConsoleColors.muted("  Cancelled"));
         System.out.println();
         return Optional.empty();
+    }
+
+    private boolean wasCompletedOn(Habit habit, LocalDate date) {
+        LocalDate last = habit.getLastCompletedDate();
+        if (last == null) return false;
+
+        // If last completed is exactly that date
+        if (last.equals(date)) return true;
+
+        // If last completed is after that date, check if streak covers it
+        if (last.isAfter(date)) {
+            long daysBetween = date.until(last).getDays();
+            return habit.getStreak() > daysBetween;
+        }
+
+        return false;
+    }
+
+    private String progressBlock(int completed, int total) {
+        if (total == 0 || completed == 0) return ConsoleColors.muted("█");
+        if (completed == total) return ConsoleColors.success("█");
+        return ConsoleColors.warning("█");
     }
 
     private void showStats(String args) {
@@ -330,17 +431,23 @@ public class InteractiveShell {
         System.out.println();
         System.out.println("  " + ConsoleColors.info("Editing: ") + habit.getIcon() + " " + ConsoleColors.bold(habit.getName()));
         System.out.println();
+        String currentComment = habit.getComment() != null ? habit.getComment() : "";
+        if (!currentComment.isEmpty()) {
+            System.out.println("        " + ConsoleColors.muted("// " + currentComment));
+        }
+        System.out.println();
         System.out.println("  " + ConsoleColors.bold("What to edit?"));
         System.out.println("    1) Name");
         System.out.println("    2) Icon");
-        System.out.println("    3) Both");
+        System.out.println("    3) Comment");
+        System.out.println("    4) All");
         System.out.println();
-        System.out.print("  " + ConsoleColors.muted("Choice (1-3): "));
+        System.out.print("  " + ConsoleColors.muted("Choice (1-4): "));
         System.out.print(ConsoleColors.command(""));
 
         String choice = scanner.nextLine().trim();
 
-        if (choice.equals("1") || choice.equals("3")) {
+        if (choice.equals("1") || choice.equals("4")) {
             System.out.print("  " + ConsoleColors.muted("New name: "));
             System.out.print(ConsoleColors.command(""));
             String newName = scanner.nextLine().trim();
@@ -350,12 +457,19 @@ public class InteractiveShell {
             }
         }
 
-        if (choice.equals("2") || choice.equals("3")) {
+        if (choice.equals("2") || choice.equals("4")) {
             String newIcon = promptIconSelection();
             habit.setIcon(newIcon);
         }
 
-        if (choice.equals("1") || choice.equals("2") || choice.equals("3")) {
+        if (choice.equals("3") || choice.equals("4")) {
+            System.out.print("  " + ConsoleColors.muted("New comment (leave empty to remove): "));
+            System.out.print(ConsoleColors.command(""));
+            String newComment = scanner.nextLine().trim();
+            habit.setComment(newComment.isEmpty() ? null : newComment);
+        }
+
+        if (choice.matches("[1-4]")) {
             repository.save(habit);
             System.out.println(ConsoleColors.success("  ✓ Updated: " + habit.getIcon() + " " + habit.getName()));
         } else {

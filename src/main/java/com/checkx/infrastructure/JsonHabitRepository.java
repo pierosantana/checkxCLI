@@ -25,19 +25,8 @@ import java.util.Optional;
  */
 public class JsonHabitRepository implements HabitRepository {
     
-    private static final String DATA_DIR = getJarDirectory() + "/.checkx";
+    private static final String DATA_DIR = System.getProperty("user.dir") + "/.checkx";
     private static final String DATA_FILE = DATA_DIR + "/habits.json";
-
-    private static String getJarDirectory() {
-        try {
-            String jarPath = JsonHabitRepository.class.getProtectionDomain()
-                    .getCodeSource().getLocation().toURI().getPath();
-            return new File(jarPath).getParentFile().getAbsolutePath();
-        } catch (Exception e) {
-            // Fallback to current working directory
-            return System.getProperty("user.dir");
-        }
-    }
 
 
     private final Gson gson;

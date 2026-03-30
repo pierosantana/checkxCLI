@@ -11,15 +11,21 @@ public class Habit {
     private final String id;
     private String name;
     private String icon;
+    private String comment;
     private int streak;
     private boolean completedToday;
     private LocalDate lastCompletedDate;
     private final LocalDate createdDate;
 
     public Habit(String name, String icon) {
+        this(name, icon, null);
+    }
+
+    public Habit(String name, String icon, String comment) {
         this.id = UUID.randomUUID().toString();
         this.name = name;
         this.icon = icon;
+        this.comment = comment;
         this.streak = 0;
         this.completedToday = false;
         this.lastCompletedDate = null;
@@ -135,6 +141,14 @@ public class Habit {
 
     public void setIcon(String icon) {
         this.icon = icon;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     @Override
