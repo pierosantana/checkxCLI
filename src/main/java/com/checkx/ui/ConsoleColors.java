@@ -46,6 +46,10 @@ public class ConsoleColors {
         return GREEN + text + RESET;
     }
 
+    public static String successBar(String text) {
+        return BRIGHT_GREEN + text + RESET;
+    }
+
     public static String error(String text) {
         return RED + text + RESET;
     }
@@ -63,7 +67,7 @@ public class ConsoleColors {
     }
 
     public static String title(String text) {
-        return BRIGHT_BLUE + BOLD + text + RESET;
+        return BRIGHT_WHITE + BOLD + text + RESET;
     }
 
     public static String muted(String text) {
@@ -72,24 +76,24 @@ public class ConsoleColors {
 
     // CheckX specific colors
     public static String streak(String text) {
-        return BRIGHT_YELLOW + BOLD + "🔥 " + text + RESET;
+        return BRIGHT_GREEN + BOLD + "▲ " + text + RESET;
     }
 
     public static String habitCompleted(String text) {
-        return BRIGHT_GREEN + "[✓] " + text + RESET;
+        return BRIGHT_GREEN + "[✓] " + BRIGHT_WHITE + text + RESET;
     }
 
     public static String habitPending(String text) {
-        return BRIGHT_BLACK + "[ ] " + text + RESET;
+        return WHITE + "[ ] " + BRIGHT_WHITE + text + RESET;
     }
 
     public static String command(String text) {
-        return BRIGHT_GREEN + "$ " + text + RESET;
+        return BRIGHT_GREEN + "~$ " + BRIGHT_WHITE + text + RESET;
     }
 
     // Backgrounds
     public static String successBg(String text) {
-        return BG_GREEN + BLACK + " " + text + " " + RESET;
+        return BG_GREEN + BLACK + " " +   text + " " + RESET;
     }
 
     public static String errorBg(String text) {
@@ -160,37 +164,31 @@ public class ConsoleColors {
 
     // Banner
     public static void printBanner() {
-        String[] banner = {
-            " ██████ ██   ██ ███████  ██████ ██   ██ ██   ██",
-            "██      ██   ██ ██      ██      ██  ██   ██ ██ ",
-            "██      ███████ █████   ██      █████     ███  ",
-            "██      ██   ██ ██      ██      ██  ██   ██ ██ ",
-            " ██████ ██   ██ ███████  ██████ ██   ██ ██   ██"
-        };
-
-        String[] colors = {
-            BRIGHT_GREEN,
-            GREEN,
-            CYAN,
-            BRIGHT_CYAN,
-            BRIGHT_BLUE
+        // Parte "CHECK" (blanco) | Parte "X" (rojo)
+        String[][] banner = {
+                {" ██████ ██   ██ ███████  ██████ ██   ██ ", "██   ██"},
+                {"██      ██   ██ ██      ██      ██  ██   ", "██ ██ "},
+                {"██      ███████ █████   ██      █████     ", "███  "},
+                {"██      ██   ██ ██      ██      ██  ██   ", "██ ██ "},
+                {" ██████ ██   ██ ███████  ██████ ██   ██ ", "██   ██"}
         };
 
         System.out.println();
         for (int i = 0; i < banner.length; i++) {
-            System.out.println(colors[i] + banner[i] + RESET);
+            // "CHECK" en blanco + "X" en rojo
+            System.out.println(BRIGHT_RED + banner[i][0] + BRIGHT_BLACK + banner[i][1] + RESET);
         }
-        System.out.println(muted("     Your terminal companion for habits & focus"));
+        System.out.println(muted("     Your terminal app for habits & stay focus."));
         System.out.println();
     }
 
     // Decorative dividers
     public static void printSeparator() {
-        System.out.println(info("═".repeat(70)));
+        System.out.println(info("═".repeat(60)));
     }
 
     public static void printLine() {
-        System.out.println(muted("─".repeat(70)));
+        System.out.println(muted("─".repeat(60)));
     }
 
     // Welcome message

@@ -86,15 +86,20 @@ public class InteractiveShell {
         int total = habits.size();
         LocalDate today = LocalDate.now();
 
+        String todayFormatted = today.format(DateTimeFormatter.ofPattern("EEEE, MMMM d yyyy"));
+        System.out.println(ConsoleColors.title("\n  🗓️ " + todayFormatted));
+        ConsoleColors.printLine();
+
         // Get Monday of current week
         LocalDate monday = today.with(java.time.DayOfWeek.MONDAY);
 
         System.out.println();
-        ConsoleColors.printSeparator();
+        /*ConsoleColors.printSeparator();*/
 
         // Week calendar: Mon-Sun
         StringBuilder headerLine = new StringBuilder("  ");
         StringBuilder dataLine = new StringBuilder("  ");
+        StringBuilder barLine = new StringBuilder("  ");
 
         for (int i = 0; i < 7; i++) {
             LocalDate day = monday.plusDays(i);
@@ -112,7 +117,7 @@ public class InteractiveShell {
             }
 
             String num = String.valueOf(day.getDayOfMonth());
-            String marker = isToday ? "*" : " ";
+            String marker = isToday ? ConsoleColors.title("*") : " ";
             String block;
             if (isFuture) {
                 block = ConsoleColors.muted("█");
@@ -121,16 +126,18 @@ public class InteractiveShell {
             }
 
             headerLine.append(String.format(" %-7s", label));
-            dataLine.append(String.format("%s%2s%s    ", marker, num, block));
+            dataLine.append(String.format("%s%2s%s    ", marker, num, " "));
+            barLine.append(String.format("%s%s%s%s    ", block, block, block,block));
         }
 
         System.out.println(headerLine);
         System.out.println(dataLine);
-        ConsoleColors.printLine();
+        System.out.println(barLine);
+        System.out.println("");
 
-        String todayFormatted = today.format(DateTimeFormatter.ofPattern("EEEE, MMMM d yyyy"));
-        System.out.println(ConsoleColors.title("  🗓️  " + todayFormatted));
-        ConsoleColors.printLine();
+        /*ConsoleColors.printLine();*/
+
+        System.out.println(ConsoleColors.title("  Daily goals"));
 
         for (Habit habit : habits) {
             String checkbox = habit.isCompletedToday()
@@ -162,7 +169,7 @@ public class InteractiveShell {
         StringBuilder bar = new StringBuilder("  ");
         for (int i = 0; i < barLen; i++) {
             if (i < filled) {
-                bar.append(pct >= 60 ? ConsoleColors.success("█") : ConsoleColors.warning("█"));
+                bar.append(pct >= 60 ? ConsoleColors.successBar("█") : ConsoleColors.warning("█"));
             } else {
                 bar.append(ConsoleColors.muted("░"));
             }
@@ -170,8 +177,8 @@ public class InteractiveShell {
         bar.append("  ").append(ConsoleColors.bold(pct + "%"));
 
         System.out.println(bar);
-        System.out.println("  " + ConsoleColors.info("Progress: ") + ConsoleColors.bold(completed + "/" + totalHabits));
-        ConsoleColors.printSeparator();
+        System.out.println("  " + ConsoleColors.muted("Progress: " + completed + "/" + totalHabits));
+        /*ConsoleColors.printLine();*/
         System.out.println();
     }
 
@@ -330,7 +337,7 @@ public class InteractiveShell {
 
     private String progressBlock(int completed, int total) {
         if (total == 0 || completed == 0) return ConsoleColors.muted("█");
-        if (completed == total) return ConsoleColors.success("█");
+        if (completed == total) return ConsoleColors.successBar("█");
         return ConsoleColors.warning("█");
     }
 
