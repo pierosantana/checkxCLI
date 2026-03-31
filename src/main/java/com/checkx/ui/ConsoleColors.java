@@ -36,6 +36,7 @@ public class ConsoleColors {
     private static final String BG_MAGENTA = "\u001B[45m";
     private static final String BG_CYAN = "\u001B[46m";
     private static final String BG_WHITE = "\u001B[47m";
+    public static final String STRIKETHROUGH = "\u001B[9m";
 
     // Text attributes
     private static final String BOLD = "\u001B[1m";
@@ -80,7 +81,7 @@ public class ConsoleColors {
     }
 
     public static String habitCompleted(String text) {
-        return BRIGHT_GREEN + "[✓] " + BRIGHT_WHITE + text + RESET;
+        return BRIGHT_GREEN + "[✓] " +  BRIGHT_WHITE + text + RESET;
     }
 
     public static String habitPending(String text) {
@@ -89,6 +90,20 @@ public class ConsoleColors {
 
     public static String command(String text) {
         return BRIGHT_GREEN + "~$ " + BRIGHT_WHITE + text + RESET;
+    }
+
+    // Todo specific colors
+    public static String todoCompleted(String text) {
+        return BRIGHT_GREEN + "[✓] " + STRIKETHROUGH +  BRIGHT_WHITE + text + RESET;
+    }
+
+    // Tab bar
+    public static String tabActive(String text) {
+        return BOLD + GREEN + UNDERLINE + " " + text + " " + RESET;
+    }
+
+    public static String tabInactive(String text) {
+        return BRIGHT_BLACK + " " + text + " " + RESET;
     }
 
     // Backgrounds

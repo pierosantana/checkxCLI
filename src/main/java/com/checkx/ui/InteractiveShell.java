@@ -3,7 +3,9 @@ package com.checkx.ui;
 import com.checkx.domain.Habit;
 import com.checkx.domain.HabitRepository;
 import com.checkx.domain.Stats;
+import com.checkx.domain.TodoTask;
 import com.checkx.infrastructure.JsonHabitRepository;
+import com.checkx.infrastructure.JsonTodoRepository;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -18,6 +20,7 @@ import java.util.Scanner;
 public class InteractiveShell {
 
     private final HabitRepository repository;
+    private final JsonTodoRepository todoRepository;
     private final Scanner scanner;
     private boolean running;
 
@@ -27,9 +30,9 @@ public class InteractiveShell {
 
     public InteractiveShell() {
         this.repository = new JsonHabitRepository();
+        this.todoRepository = new JsonTodoRepository();
         this.scanner = new Scanner(System.in);
         this.running = true;
-
     }
 
     public void start() {
@@ -67,6 +70,7 @@ public class InteractiveShell {
             case "edit", "rename" -> editHabit(args);
             case "undone", "undo" -> undoneHabit(args);
             case "delete", "remove", "rm" -> deleteHabit(args);
+            case "todo" -> handleTodoCommand(args);
             case "help", "?" -> showHelp();
             case "clear", "cls" -> ConsoleColors.clearScreen();
             case "exit", "quit", "q" -> exit();
@@ -86,9 +90,11 @@ public class InteractiveShell {
         int total = habits.size();
         LocalDate today = LocalDate.now();
 
+
+        printTabBar("HABITS");
+
         String todayFormatted = today.format(DateTimeFormatter.ofPattern("EEEE, MMMM d yyyy"));
-        System.out.println(ConsoleColors.title("\n  🗓️ " + todayFormatted));
-        ConsoleColors.printLine();
+        System.out.println(ConsoleColors.title("  🗓️ " + todayFormatted));
 
         // Get Monday of current week
         LocalDate monday = today.with(java.time.DayOfWeek.MONDAY);
@@ -169,7 +175,7 @@ public class InteractiveShell {
         StringBuilder bar = new StringBuilder("  ");
         for (int i = 0; i < barLen; i++) {
             if (i < filled) {
-                bar.append(pct >= 60 ? ConsoleColors.successBar("█") : ConsoleColors.warning("█"));
+                bar.append(pct >= 60 ? ConsoleColors.success("█") : ConsoleColors.warning("█"));
             } else {
                 bar.append(ConsoleColors.muted("░"));
             }
@@ -352,16 +358,10 @@ public class InteractiveShell {
 
         Stats stats = new Stats(habits);
 
-        System.out.println();
-        ConsoleColors.printSeparator();
-        
-        String title = switch (args.toLowerCase()) {
-            case "daily", "today" -> "📊 Today's Statistics";
-            case "all", "total" -> "📊 All-Time Statistics";
-            default -> "📊 Statistics";
-        };
-        
-        System.out.println(ConsoleColors.title("  " + title));
+        printTabBar("STATS");
+
+        String todayFormatted = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, MMMM d yyyy"));
+        System.out.println(ConsoleColors.title("  🗓️ " + todayFormatted));
         ConsoleColors.printLine();
 
         System.out.println("  " + ConsoleColors.info("Total habits:     ") + 
@@ -556,13 +556,22 @@ public class InteractiveShell {
         System.out.println("    " + ConsoleColors.info("stats all") + "             All-time stats");
 
         System.out.println();
-        System.out.println("  " + ConsoleColors.bold("Managing:"));
+        System.out.println("  " + ConsoleColors.bold("Habits:"));
         System.out.println("    " + ConsoleColors.info("add [name]") + "            Add new habit");
         System.out.println("    " + ConsoleColors.info("add [name], [comment]") + " Add habit with comment");
         System.out.println("    " + ConsoleColors.info("done [name]") + "           Complete a habit");
         System.out.println("    " + ConsoleColors.info("undone [name]") + "         Revert today's completion");
         System.out.println("    " + ConsoleColors.info("edit [name]") + "           Edit name, icon or comment");
         System.out.println("    " + ConsoleColors.info("delete [name]") + "         Delete a habit");
+
+        System.out.println();
+        System.out.println("  " + ConsoleColors.bold("Tasks:"));
+        System.out.println("    " + ConsoleColors.info("todo") + "                  Show today's tasks");
+        System.out.println("    " + ConsoleColors.info("todo add [task]") + "       Add a quick task (max 35 chars)");
+        System.out.println("    " + ConsoleColors.info("todo done [task]") + "      Complete a task");
+        System.out.println("    " + ConsoleColors.info("todo undone [task]") + "    Revert task completion");
+        System.out.println("    " + ConsoleColors.info("todo del [task]") + "       Delete a task");
+        System.out.println("    " + ConsoleColors.info("todo rm [task]") + "        Alias for del");
 
         System.out.println();
         System.out.println("  " + ConsoleColors.bold("Other:"));
@@ -592,5 +601,227 @@ public class InteractiveShell {
 
     private void exit() {
         running = false;
+    }
+
+    // ── Tab Bar ──────────────────────────────────────────
+
+    private void printTabBar(String active) {
+        System.out.println();
+        System.out.print("  ");
+        System.out.print(active.equals("HABITS") ? ConsoleColors.tabActive("HABITS") : ConsoleColors.tabInactive("HABITS"));
+        System.out.print("    ");
+        System.out.print(active.equals("TODO") ? ConsoleColors.tabActive("TODO") : ConsoleColors.tabInactive("TODO"));
+        System.out.print("    ");
+        System.out.println(active.equals("STATS") ? ConsoleColors.tabActive("STATS") : ConsoleColors.tabInactive("STATS"));
+        ConsoleColors.printLine();
+    }
+
+    // ── TODO Feature ─────────────────────────────────────
+
+    private void handleTodoCommand(String args) {
+        if (args.isEmpty()) {
+            showTodo();
+            return;
+        }
+
+        String[] parts = args.split("\\s+", 2);
+        String subCommand = parts[0].toLowerCase();
+        String subArgs = parts.length > 1 ? parts[1] : "";
+
+        switch (subCommand) {
+            case "add" -> addTodo(subArgs);
+            case "done" -> completeTodo(subArgs);
+            case "undone", "undo" -> undoneTodo(subArgs);
+            case "del", "rm" -> deleteTodo(subArgs);
+            default -> {
+                // If no subcommand matched, treat the whole args as "add"
+                addTodo(args);
+            }
+        }
+    }
+
+    private void showTodo() {
+        LocalDate today = LocalDate.now();
+        LocalDate yesterday = today.minusDays(1);
+
+        List<TodoTask> todayTasks = todoRepository.findByDate(today);
+        List<TodoTask> yesterdayTasks = todoRepository.findByDate(yesterday);
+
+        printTabBar("TODO");
+
+        String todayFormatted = today.format(DateTimeFormatter.ofPattern("EEEE, MMMM d yyyy"));
+        System.out.println(ConsoleColors.title("  \uD83D\uDDD3\uFE0F " + todayFormatted));
+        System.out.println();
+
+        if (todayTasks.isEmpty()) {
+            System.out.println(ConsoleColors.muted("  No tasks for today. Use 'todo add [task]' to create one."));
+        } else {
+            for (TodoTask task : todayTasks) {
+                String checkbox = task.isCompleted()
+                        ? ConsoleColors.todoCompleted(task.getText())
+                        : ConsoleColors.habitPending(task.getText());
+                System.out.println("  " + checkbox);
+            }
+        }
+
+        if (!yesterdayTasks.isEmpty()) {
+            System.out.println();
+            String yesterdayFormatted = yesterday.format(DateTimeFormatter.ofPattern("EEEE, MMMM d yyyy"));
+            System.out.println("  " + ConsoleColors.muted("── " + yesterdayFormatted + " ──"));
+            System.out.println();
+
+            for (TodoTask task : yesterdayTasks) {
+                String checkbox = task.isCompleted()
+                        ? ConsoleColors.todoCompleted(task.getText())
+                        : ConsoleColors.habitPending(task.getText());
+                System.out.println("  " + checkbox);
+            }
+        }
+
+        ConsoleColors.printLine();
+        System.out.println("  " + ConsoleColors.muted("todo add [task] \u00B7 todo done [name] \u00B7 todo del [name]"));
+        System.out.println();
+    }
+
+    private void addTodo(String text) {
+        if (text.isEmpty()) {
+            System.out.println(ConsoleColors.error("  Usage: todo add [task text]"));
+            System.out.println(ConsoleColors.muted("  Example: todo add Buy groceries"));
+            System.out.println();
+            return;
+        }
+
+        if (text.length() > TodoTask.getMaxTextLength()) {
+            System.out.println(ConsoleColors.error("  Task too long (" + text.length() + " chars). Max " + TodoTask.getMaxTextLength() + "."));
+            System.out.println();
+            return;
+        }
+
+        text = text.substring(0, 1).toUpperCase() + text.substring(1);
+        TodoTask task = new TodoTask(text);
+        todoRepository.save(task);
+
+        System.out.println(ConsoleColors.success("  \u2713 Added: " + task.getText()));
+        System.out.println();
+    }
+
+    private void completeTodo(String args) {
+        if (args.isEmpty()) {
+            System.out.println(ConsoleColors.error("  Usage: todo done [task name]"));
+            System.out.println();
+            return;
+        }
+
+        var taskOpt = resolveTask(args);
+        if (taskOpt.isEmpty()) return;
+
+        TodoTask task = taskOpt.get();
+
+        if (task.isCompleted()) {
+            System.out.println(ConsoleColors.warning("  " + task.getText() + " already completed"));
+            System.out.println();
+            return;
+        }
+
+        task.complete();
+        todoRepository.save(task);
+
+        System.out.println(ConsoleColors.success("  \u2713 " + task.getText() + " completed!"));
+        System.out.println();
+    }
+
+    private void undoneTodo(String args) {
+        if (args.isEmpty()) {
+            System.out.println(ConsoleColors.error("  Usage: todo undone [task name]"));
+            System.out.println();
+            return;
+        }
+
+        var taskOpt = resolveTask(args);
+        if (taskOpt.isEmpty()) return;
+
+        TodoTask task = taskOpt.get();
+
+        if (!task.isCompleted()) {
+            System.out.println(ConsoleColors.warning("  " + task.getText() + " is not completed"));
+            System.out.println();
+            return;
+        }
+
+        task.uncomplete();
+        todoRepository.save(task);
+
+        System.out.println(ConsoleColors.success("  \u21A9 " + task.getText() + " marked as not completed"));
+        System.out.println();
+    }
+
+    private void deleteTodo(String args) {
+        if (args.isEmpty()) {
+            System.out.println(ConsoleColors.error("  Usage: todo del [task name]"));
+            System.out.println();
+            return;
+        }
+
+        var taskOpt = resolveTask(args);
+        if (taskOpt.isEmpty()) return;
+
+        TodoTask task = taskOpt.get();
+
+        System.out.print(ConsoleColors.warning("  Delete '" + task.getText() + "'? (y/N) "));
+        System.out.print(ConsoleColors.command(""));
+        String confirm = scanner.nextLine().trim().toLowerCase();
+
+        if (confirm.equals("y") || confirm.equals("yes")) {
+            todoRepository.delete(task.getId());
+            System.out.println(ConsoleColors.success("  \u2713 Deleted: " + task.getText()));
+        } else {
+            System.out.println(ConsoleColors.muted("  Cancelled"));
+        }
+        System.out.println();
+    }
+
+    private Optional<TodoTask> resolveTask(String args) {
+        // Try exact match first
+        var exact = todoRepository.findByText(args);
+        if (exact.isPresent()) {
+            return exact;
+        }
+
+        // Try partial match
+        List<TodoTask> matches = todoRepository.searchByText(args);
+
+        if (matches.isEmpty()) {
+            System.out.println(ConsoleColors.error("  Task not found: " + args));
+            System.out.println(ConsoleColors.muted("  Tip: Use 'todo' to see all tasks"));
+            System.out.println();
+            return Optional.empty();
+        }
+
+        if (matches.size() == 1) {
+            return Optional.of(matches.get(0));
+        }
+
+        // Multiple matches - ask user to pick
+        System.out.println(ConsoleColors.warning("  Multiple tasks match '" + args + "':"));
+        for (int i = 0; i < matches.size(); i++) {
+            TodoTask t = matches.get(i);
+            String status = t.isCompleted() ? ConsoleColors.success("[✓]") : ConsoleColors.muted("[ ]");
+            System.out.println("    " + (i + 1) + ") " + status + " " + t.getText());
+        }
+        System.out.print("  " + ConsoleColors.muted("Choose (1-" + matches.size() + "): "));
+        System.out.print(ConsoleColors.command(""));
+
+        String input = scanner.nextLine().trim();
+        try {
+            int choice = Integer.parseInt(input);
+            if (choice >= 1 && choice <= matches.size()) {
+                return Optional.of(matches.get(choice - 1));
+            }
+        } catch (NumberFormatException ignored) {
+        }
+
+        System.out.println(ConsoleColors.muted("  Cancelled"));
+        System.out.println();
+        return Optional.empty();
     }
 }
