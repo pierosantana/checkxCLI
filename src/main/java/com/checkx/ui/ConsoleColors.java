@@ -159,7 +159,7 @@ public class ConsoleColors {
 
     // Progress bar
     public static void progressBar(int current, int total, String label) {
-        int barLength = 40;
+        int barLength = 34;
         int progress = (int) ((double) current / total * barLength);
 
         StringBuilder bar = new StringBuilder("[");
